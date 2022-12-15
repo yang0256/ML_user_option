@@ -20,24 +20,39 @@ import sys
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 
+def err_mesg(err_count):
+    print("Not an appropriate choice.")
+    err_count += 1  
+    # print(err_count)    
 
-# def err_mesg(err_count):
-#     err_count +=1          
-#     if err_count > 3:
-#         print("Sorry, too many errors")
-#         break
-#     else:
-#         return
-
+    if err_count > 3:
+        print("Sorry, too many errors. Please restart. \n\n")
+        
+        sys.exit()
+    else:
+        return err_count
+        
+def ask_user_continue():
+    '''define function for screen break '''
+    while True:    
+        user_next = input("Continue: y/n? ")  
+        if user_next == 'y':
+            return
+        elif user_next == 'n':
+            sys.exit()
+        else:
+            print('Please enter y/n ....\n')         
 
 def let_user_choose(options):   
      
     '''define funtion for user to enter choice and validate the input'''
     
     print("Please choose dataset:")
-    # list the dataset choices
+    # list the dataset choices1
+    
     for id, choice in enumerate(options):    
         print("{}) {}".format(id + 1, choice))  
 
@@ -50,41 +65,24 @@ def let_user_choose(options):
 
         # Validation Rules
         try:
+            ### if numberic value entered
             id = int(idx) -1
             
             if id in range(len(options)):
+                
                 return id
             
             else:
-                print("Not an appropriate choice.")
-                err_count +=1
-                if err_count > 3:
-                        print("Sorry, too many errors \n")
-                        break
+              
+                err_count = err_mesg(err_count)
+
         except ValueError:
-            print("Not an appropriate choice.")
-            err_count +=1
-            if err_count > 3:
-                print("Sorry, too many errors \n")
-                break
-            
-            
+            ### if other input error
+            err_count = err_mesg(err_count)
 
-
-def ask_user_continue():
-    '''define function for screen break '''
-    while True:    
-        user_next = input("Continue: y/n? ")  
-        if user_next == 'y':
-            return
-        elif user_next == 'n':
-            sys.exit()
-        else:
-            print('Please enter y/n ....')
-            
-    
-'''define function to load the california housing dataset'''
 def load_dataset_cali():
+    '''define function to load the california housing dataset'''
+    
     from sklearn.datasets import fetch_california_housing
     california = fetch_california_housing()
     # california_housing.frame.info()
@@ -98,59 +96,90 @@ def load_dataset_cali():
     # print(california_df.describe())
     
     sample_df = california_df.sample(frac=0.1, random_state=17)
-    # print(sample_df)
+    print(sample_df.head())
+    # print(sample_df.describe())
+    print('\n\nCalifornia_housing datdaset loaded: \n\n')
     
     # import matplotlib.pyplot as plt
     # import seaborn as sns
     sns.set(font_scale=2)
     sns.set_style('whitegrid')
     
-    
-    # let_user_choose_next()
-
-    print(sample_df.head())
-    print(sample_df.describe())
-    print('......California_housing datdaset loaded:')
-    
     ask_user_continue()
     
-    # print('Plot chart 1')
-    ## plotting the eight features as X and MedHouseValue as Y
-    for feature in california.feature_names:
-        plt.figure(figsize=(16, 9))
-        sns.scatterplot(data=sample_df, x=feature,
-            y='MedHouseValue', hue='MedHouseValue',
-            palette='cool', legend=False)
-        # print('8 features')
+    # '''plotting the eight features as X and MedHouseValue as Y'''
+    # for feature in california.feature_names:
+    #     plt.figure(figsize=(16, 9))
+    #     sns.scatterplot(data=california_df, x=feature,
+    #         y='MedHouseValue', hue='MedHouseValue',
+    #         palette='cool', legend=False)
+    #     # print('8 features')
         
-        plt.show()
-        print('Chart feature is ', feature)
-        ask_user_continue()
+    #     plt.show()
+    #     print('Chart feature is', feature)
+    #     ask_user_continue()
+
+    return california
 
 
 def split_train_test(sample_df):
     ''' function to split the sample data into model's train and test data group'''    
     ###Splitting the Data for Training and Testing
-
+    # from sklearn.datasets import fetch_california_housing
+    # california = fetch_california_housing()
     from sklearn.model_selection import train_test_split
     
+    ## randomize and split the arrays of sample and target data, seed value returns
+    ## 4 tuples, X is training 2D array, y is target portion 1D array
+    X = sample_df.data
+    y = sample_df.target
     
     X_train, X_test, y_train, y_test = train_test_split(
-         sample_df.data, sample_df.target, random_state=11)
+         X, y, random_state=11) 
 
-    # print('Plot chart 3')
-    X_train.shape
-    (15480, 8)
-    # print('Plot chart 4')
-    X_test.shape
-    (5160, 8)
-    # print('Plot chart 5')
+    # print("X_train array", X_train.shape)
 
+    # print("X_test", X_test.shape)
+
+    return  X_train, X_test, y_train, y_test 
+
+
+def LinearRegression_training(X_train, X_test, y_train, y_test, sample_df):
+    ''' create a LinearRegression estimator and invoke its fit method to train the estimator using X_train and y_train'''
+    from sklearn.linear_model import LinearRegression
+    linear_regression = LinearRegression()
+    linear_regression.fit(X=X_train, y=y_train)
+    for i, name in enumerate(sample_df.feature_names):
+        print(f'{name:>10}: {linear_regression.coef_[i]}')
+
+    predicted = linear_regression.predict(X_test)
+    expected = y_test
+
+    # print('\n\npredited 5: ',predicted[:5])
+    # print('expected 5: ',expected[:5])
+    
+    return expected,predicted
+
+
+def visualize_regression(expected,predicted):
+    df = pd.DataFrame()
+    df['Expected'] = pd.Series(expected)
+    df['Predicted'] =pd.Series(predicted)
+    # figure = plt.figure(figsize=(9, 9))
+    axes = sns.scatterplot(data=df, x='Expected', y='Predicted', hue='Predicted', palette='cool', legend=False)
+    start = min(expected.min(), predicted.min())
+    end = max(expected.max(), predicted.max())
+    axes.set_xlim(start, end)
+    axes.set_ylim(start, end)
+    
+    
+    plt.plot([start, end], [start, end], 'k--')
+    plt.show()
 
 def load_dataset_diabetes():
-    
-    import matplotlib.pyplot as plt
-    import numpy as np
+    '''define function to load the diabetes dataset'''    
+    # import matplotlib.pyplot as plt
+    # import numpy as np
     from sklearn import datasets, linear_model
     from sklearn.metrics import mean_squared_error, r2_score
     
@@ -197,10 +226,10 @@ def load_dataset_diabetes():
 
 
 def user_interaction_main():
-    
+    '''define main menu user interaction function '''    
     while True:
         try:
-            # call func for input,validation and error handling, parsing choice value
+            # call func for input validation and error handling, parsing choice#
             user_choice = let_user_choose(options)   
         except ValueError:
             #ask user if to continute at errors
@@ -208,8 +237,30 @@ def user_interaction_main():
             continue
             
         if (user_choice == 0):                
-            load_dataset_cali()
-            # ask_user_continue()        
+            sample_df = load_dataset_cali()
+            # print(sample_df)      
+
+            # Split the data into training and testing sets
+
+            X_train, X_test, y_train, y_test = split_train_test(sample_df)
+ 
+            print("\n\nSplit the date into training and test sets \n\nX_train array", X_train.shape)
+            print("X_test array", X_test.shape)
+ 
+            ask_user_continue()   
+ 
+            print("\n\nCoefficients for each feature:\n\n")
+            expected,predicted = LinearRegression_training(X_train, X_test, y_train, y_test, sample_df)
+            
+            
+            # # Fit a linear regression model to the training data
+            # model = fit_linear_model(X_train, y_train)
+
+            # # Evaluate the model on the testing data
+            # evaluate_model(model, X_test, y_test)
+            visualize_regression(expected,predicted)
+            
+            ask_user_continue()  
                 
         elif (user_choice == 1):
             load_dataset_diabetes()
@@ -220,9 +271,10 @@ def user_interaction_main():
             print ("Exiting the program")
        
             sys.exit()
+            
         else:
             
-            print('Please choose from the list')
+            print('Please choose from the list.\n\n\n')
             continue
         
         
