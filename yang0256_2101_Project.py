@@ -23,14 +23,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def err_mesg(err_count):
-    print("Not an appropriate choice.")
+def err_mesg(err_msg, err_count):
+    print(err_msg)
     err_count += 1  
     # print(err_count)    
 
     if err_count > 3:
-        print("Sorry, too many errors. Please restart. \n\n")
-        
+        print("Sorry, too many errors. Please restart. \n\n")     
         sys.exit()
     else:
         return err_count
@@ -73,12 +72,13 @@ def let_user_choose(options):
                 return id
             
             else:
-              
-                err_count = err_mesg(err_count)
+                err_msg = "Invalid number."
+                err_count = err_mesg(err_msg,err_count) 
 
         except ValueError:
             ### if other input error
-            err_count = err_mesg(err_count)
+            err_msg = "Not an appropriate choice."
+            err_count = err_mesg(err_msg, err_count)
 
 def load_dataset_cali():
     '''define function to load the california housing dataset'''
@@ -107,17 +107,17 @@ def load_dataset_cali():
     
     ask_user_continue()
     
-    # '''plotting the eight features as X and MedHouseValue as Y'''
-    # for feature in california.feature_names:
-    #     plt.figure(figsize=(16, 9))
-    #     sns.scatterplot(data=california_df, x=feature,
-    #         y='MedHouseValue', hue='MedHouseValue',
-    #         palette='cool', legend=False)
-    #     # print('8 features')
+    '''plotting the eight features as X and MedHouseValue as Y'''
+    for feature in california.feature_names:
+        plt.figure(figsize=(16, 9))
+        sns.scatterplot(data=california_df, x=feature,
+            y='MedHouseValue', hue='MedHouseValue',
+            palette='cool', legend=False)
+        # print('8 features')
         
-    #     plt.show()
-    #     print('Chart feature is', feature)
-    #     ask_user_continue()
+        plt.show()
+        print('Chart feature is', feature)
+        ask_user_continue()
 
     return california
 
@@ -145,7 +145,8 @@ def split_train_test(sample_df):
 
 
 def LinearRegression_training(X_train, X_test, y_train, y_test, sample_df):
-    ''' create a LinearRegression estimator and invoke its fit method to train the estimator using X_train and y_train'''
+    ''' create a LinearRegression estimator and invoke its fit method \
+        to train the estimator using X_train and y_train'''
     from sklearn.linear_model import LinearRegression
     linear_regression = LinearRegression()
     linear_regression.fit(X=X_train, y=y_train)
