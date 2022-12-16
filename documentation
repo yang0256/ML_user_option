@@ -1,0 +1,9 @@
+This code is designed to load and visualize the California Housing dataset. It imports several libraries, including pandas, seaborn, matplotlib.pyplot, and numpy. It also defines several functions:
+
+err_mesg: This function takes in an error message and an error count, prints the error message, increments the error count, and returns the error count. If the error count is greater than 3, it also prints a message and exits the program.
+ask_user_continue: This function prompts the user to input 'y' or 'n', and continues or exits the program based on the user's response.
+let_user_choose: This function presents a list of options to the user and allows the user to choose one by entering a number corresponding to the option. It has error handling in place to validate the user's input.
+load_dataset_cali: This function loads the California Housing dataset using sklearn.datasets, creates a Pandas dataframe from it, and then randomly samples 10% of the data to create another dataframe. It also generates several plots using the seaborn library to visualize the relationship between different features and the target variable.
+split_train_test: This function splits the input data into a training set and a test set, using 80% of the data for training and 20% for testing. It returns the training and test sets as a tuple.
+run_model: This function takes in a model, a training set, and a test set, and fits the model to the training data. It then prints the model's training and test scores, as well as the model's coefficients and intercept.
+It appears that the purpose of this code is to provide a framework for loading and visualizing the California Housing dataset, as well as fitting and evaluating a linear regression model on the data.
